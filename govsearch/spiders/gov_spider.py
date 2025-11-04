@@ -113,6 +113,8 @@ class GovSpider(SitemapSpider):
                 line = line.strip()
                 if line.lower().startswith("sitemap:"):
                     sitemap_url = line.split(":", 1)[1].strip()
+                    # Convert relative URLs to absolute URLs
+                    sitemap_url = response.urljoin(sitemap_url)
                     sitemap_urls.append(sitemap_url)
                     self.logger.info(f"Found sitemap in robots.txt: {sitemap_url}")
 
