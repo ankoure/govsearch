@@ -40,8 +40,8 @@ class OpenSearchPipeline:
                             "type": "nested",
                             "properties": {
                                 "url": {"type": "keyword"},
-                                "text": {"type": "text"}
-                            }
+                                "text": {"type": "text"},
+                            },
                         },
                         "osm_relation_id": {"type": "keyword"},
                     }

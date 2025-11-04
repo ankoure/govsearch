@@ -52,9 +52,9 @@ DOWNLOAD_WARNSIZE = 5242880  # 5MB
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    "govsearch.middlewares.GovsearchDownloaderMiddleware": 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    "govsearch.middlewares.ResponseValidationMiddleware": 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -92,9 +92,11 @@ AUTOTHROTTLE_MAX_DELAY = 60
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
 
-# Retry middleware
+# Retry middleware with exponential backoff
 RETRY_ENABLED = True
-RETRY_TIMES = 2
+RETRY_TIMES = 5  # Increased for robustness
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]  # Added common error codes
+RETRY_PRIORITY_ADJUST = -1  # Reduce priority of retries
 
 
 # Custom settings for text extraction
@@ -104,3 +106,87 @@ TEXT_MAX_LENGTH = 50000  # maximum text length to store
 # Crawl depth settings
 DEPTH_LIMIT = 1  # How deep to follow links from seed URLs
 DEPTH_PRIORITY = 1  # Prioritize breadth-first (lower depth first)
+
+# Job persistence for resumable crawls
+JOBDIR = "crawls/gov-001"
+
+# URL filtering
+URLLENGTH_LIMIT = 2000  # Reject overly long URLs
+DUPEFILTER_DEBUG = False  # Set to True to debug duplicate filtering
+
+# URL patterns to exclude from crawling
+EXCLUDED_URL_PATTERNS = [
+    "mailto:",
+    "javascript:",
+    "tel:",
+    "ftp:",
+    "file:",
+    "#",
+    "void(0)",
+]
+
+# DNS timeout
+DNS_TIMEOUT = 60  # DNS resolution timeout in seconds
+
+# Redirect settings
+REDIRECT_ENABLED = True
+REDIRECT_MAX_TIMES = 5
+
+# Media types to ignore
+IGNORED_EXTENSIONS = [
+    "pdf",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
+    "zip",
+    "tar",
+    "gz",
+    "rar",
+    "7z",
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "bmp",
+    "svg",
+    "webp",
+    "ico",
+    "mp3",
+    "mp4",
+    "avi",
+    "mov",
+    "wmv",
+    "flv",
+    "exe",
+    "dmg",
+    "pkg",
+    "deb",
+    "rpm",
+    "apk",
+]
+
+# Header settings for better compatibility
+DEFAULT_REQUEST_HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+}
+
+# GIS keywords for identifying geospatial data links
+GIS_KEYWORDS = [
+    "gis",
+    "arcgis",
+    "map",
+    "geoportal",
+    "spatial",
+    "webmap",
+    "mapserver",
+    "geodata",
+    "geospatial",
+    "maps.arcgis.com",
+    "axisgis.com",
+    "/arcgis/rest/services",
+]

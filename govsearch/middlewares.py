@@ -4,9 +4,14 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from scrapy.exceptions import IgnoreRequest
+from scrapy.http import HtmlResponse
+import logging
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+
+logger = logging.getLogger(__name__)
 
 
 class GovsearchSpiderMiddleware:
@@ -98,3 +103,52 @@ class GovsearchDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class ResponseValidationMiddleware:
+    """Validates responses before processing"""
+
+    def __init__(self, stats):
+        self.stats = stats
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.stats)
+
+    def process_response(self, request, response, spider):
+        # Validate content type
+        content_type = (
+            response.headers.get(b"Content-Type", b"")
+            .decode("utf-8", errors="ignore")
+            .lower()
+        )
+
+        # Only process HTML/XML content
+        if not any(ct in content_type for ct in ["html", "xml", "text/plain", ""]):
+            logger.debug(
+                f"Ignoring non-HTML response from {response.url}: {content_type}"
+            )
+            self.stats.inc_value("validation/non_html_ignored")
+            raise IgnoreRequest(f"Non-HTML content type: {content_type}")
+
+        # Check for empty responses
+        if len(response.body) == 0:
+            logger.warning(f"Empty response from {response.url}")
+            self.stats.inc_value("validation/empty_response")
+            raise IgnoreRequest("Empty response body")
+
+        # Check for minimum content length
+        if isinstance(response, HtmlResponse) and len(response.text) < 100:
+            logger.warning(
+                f"Response too short from {response.url}: {len(response.text)} chars"
+            )
+            self.stats.inc_value("validation/too_short")
+            raise IgnoreRequest("Response too short")
+
+        return response
+
+    def process_exception(self, request, exception, spider):
+        # Log exceptions for analysis
+        logger.error(f"Exception processing {request.url}: {exception}")
+        self.stats.inc_value("validation/exceptions")
+        return None

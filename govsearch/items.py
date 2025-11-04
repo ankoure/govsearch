@@ -25,3 +25,15 @@ class GovSiteItem(Item):
     # OSM geometry fields
     osm_relation_id = Field()  # OSM relation ID for this domain
     depth = Field()
+
+
+class CrawlErrorItem(Item):
+    """Track failed requests for analysis and retry"""
+
+    url = Field()
+    error_type = Field()
+    error_message = Field()
+    status_code = Field()
+    timestamp = Field()
+    source_name = Field()
+    retry_count = Field()
