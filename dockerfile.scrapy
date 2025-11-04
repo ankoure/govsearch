@@ -16,9 +16,15 @@ COPY pyproject.toml poetry.lock ./
 # Install dependencies only (no dev dependencies)
 RUN poetry install --no-root --only main
 
+# Install scrapyd
+RUN pip install --no-cache-dir scrapyd scrapyd-client
+
 # Copy project files
 COPY scrapy.cfg ./
 COPY govsearch/ ./govsearch/
+
+# Copy scrapyd configuration
+COPY scrapyd.conf /etc/scrapyd/scrapyd.conf
 
 # Set environment variables (can be overridden in docker-compose)
 ENV OPENSEARCH_HOST=opensearch \
@@ -26,4 +32,10 @@ ENV OPENSEARCH_HOST=opensearch \
     OPENSEARCH_INDEX=govsites \
     SEEDS_FILE=/app/seeds.csv
 
-CMD ["scrapy", "crawl", "gov"]
+# Create directories for scrapyd
+RUN mkdir -p /var/lib/scrapyd/eggs /var/lib/scrapyd/logs /var/lib/scrapyd/items
+
+# Expose scrapyd port
+EXPOSE 6800
+
+CMD ["scrapyd"]

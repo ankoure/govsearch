@@ -1,10 +1,10 @@
 import csv
 import os
-import re
 import urllib.parse
 from datetime import datetime
 import trafilatura
 import scrapy
+from scrapy.linkextractors import LinkExtractor
 from ..items import GovSiteItem
 
 SEEDS_FILE = os.getenv("SEEDS_FILE", "seeds.csv")
@@ -31,6 +31,7 @@ class GovSpider(scrapy.Spider):
                     meta = {
                         "source_name": row.get("source_name"),
                         "start_domain": urllib.parse.urlparse(url).netloc,
+                        "osm_relation_id": row.get("@id"),
                     }
                     yield scrapy.Request(
                         url=url,
@@ -53,14 +54,45 @@ class GovSpider(scrapy.Spider):
         except Exception:
             extracted = None
         text = extracted or raw
-        text_max_length = int(response.settings.get("TEXT_MAX_LENGTH", 50000))
-        if text and len(text) >= int(response.settings.get("TRAFILATURA_CUTOFF", 100)):
+        text_max_length = int(self.settings.get("TEXT_MAX_LENGTH", 50000))
+        if text and len(text) >= int(self.settings.get("TRAFILATURA_CUTOFF", 100)):
             item["text"] = text[:text_max_length]
         else:
             item["text"] = raw[:text_max_length]
         item["status"] = str(response.status)
         item["crawled_at"] = datetime.utcnow().isoformat()
         item["source_name"] = response.meta.get("source_name")
+
+        # Extract GIS-related links
+        gis_keywords = [
+            "gis",
+            "arcgis",
+            "map",
+            "geoportal",
+            "spatial",
+            "webmap",
+            "mapserver",
+            "geodata",
+            "geospatial",
+            "maps.arcgis.com" "axisgis.com",
+            "/arcgis/rest/services",
+        ]
+        le = LinkExtractor()
+        all_links = le.extract_links(response)
+
+        gis_links = []
+        for link in all_links:
+            link_text = (link.text or "").lower()
+            link_url = link.url.lower()
+
+            if any(kw in link_url or kw in link_text for kw in gis_keywords):
+                gis_links.append({"url": link.url, "text": link.text})
+
+        item["gis_links"] = gis_links
+
+        osm_relation_id = response.meta.get("osm_relation_id")
+        if osm_relation_id:
+            item["osm_relation_id"] = osm_relation_id
 
         yield item
 

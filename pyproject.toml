@@ -7,15 +7,19 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12,<4"
+dynamic = ["entry-points"]
 dependencies = [
     "scrapy (>=2.13.3,<3.0.0)",
     "opensearch-py (>=2.0.0,<3.0.0)",
     "trafilatura (>=2.0.0,<3.0.0)",
-    "python-dotenv (>=1.2.1,<2.0.0)"
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "requests (>=2.31.0,<3.0.0)"
 ]
-package-mode = false
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+scrapyd-client = "^2.0.3"
+

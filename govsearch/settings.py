@@ -102,5 +102,5 @@ TRAFILATURA_CUTOFF = 100  # minimum length to keep
 TEXT_MAX_LENGTH = 50000  # maximum text length to store
 
 # Crawl depth settings
-DEPTH_LIMIT = 3  # How deep to follow links from seed URLs
+DEPTH_LIMIT = 1  # How deep to follow links from seed URLs
 DEPTH_PRIORITY = 1  # Prioritize breadth-first (lower depth first)

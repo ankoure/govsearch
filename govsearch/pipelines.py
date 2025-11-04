@@ -5,7 +5,7 @@
 
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
 
@@ -36,6 +36,14 @@ class OpenSearchPipeline:
                         "status": {"type": "keyword"},
                         "crawled_at": {"type": "date"},
                         "source_name": {"type": "keyword"},
+                        "gis_links": {
+                            "type": "nested",
+                            "properties": {
+                                "url": {"type": "keyword"},
+                                "text": {"type": "text"}
+                            }
+                        },
+                        "osm_relation_id": {"type": "keyword"},
                     }
                 },
             }
@@ -44,7 +52,7 @@ class OpenSearchPipeline:
     def process_item(self, item, spider):
         doc = dict(item)
         # ensure crawled_at
-        doc.setdefault("crawled_at", datetime.utcnow().isoformat())
+        doc.setdefault("crawled_at", datetime.now(timezone.utc).isoformat())
         # index document
         self.client.index(index=INDEX_NAME, body=doc)
         return item

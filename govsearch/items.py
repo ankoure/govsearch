@@ -21,9 +21,7 @@ class GovSiteItem(Item):
     status = Field()
     crawled_at = Field()
     source_name = Field()
-    # GIS detection fields
-    is_gis_page = Field()
-    gis_score = Field()
-    gis_keywords_found = Field()
-    gis_services_detected = Field()
+    gis_links = Field()  # List of GIS-related links found on page
+    # OSM geometry fields
+    osm_relation_id = Field()  # OSM relation ID for this domain
     depth = Field()
