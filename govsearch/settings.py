@@ -64,6 +64,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+# Note: This is now the global default; individual spiders can override if needed
 ITEM_PIPELINES = {
     "govsearch.pipelines.OpenSearchPipeline": 300,
 }
@@ -189,4 +190,14 @@ GIS_KEYWORDS = [
     "maps.arcgis.com",
     "axisgis.com",
     "/arcgis/rest/services",
+]
+
+# Sitemap settings
+SITEMAP_ENABLED = True  # Set to False to disable sitemap discovery
+SITEMAP_FOLLOW = [".*"]  # Regex patterns to follow in sitemaps
+# Additional sitemap locations to check (beyond default sitemap.xml)
+SITEMAP_URLS_PATTERN = [
+    "/sitemap.xml",
+    "/sitemap_index.xml",
+    "/sitemap-index.xml",
 ]

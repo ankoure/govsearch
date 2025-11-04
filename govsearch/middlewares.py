@@ -8,8 +8,6 @@ from scrapy.exceptions import IgnoreRequest
 from scrapy.http import HtmlResponse
 import logging
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
 
 logger = logging.getLogger(__name__)
 
