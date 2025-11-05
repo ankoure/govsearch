@@ -16,6 +16,9 @@ COPY pyproject.toml poetry.lock ./
 # Install dependencies only (no dev dependencies)
 RUN poetry install --no-root --only main
 
+# Download spaCy language model
+RUN python -m spacy download en_core_web_sm
+
 # Install scrapyd
 RUN pip install --no-cache-dir scrapyd scrapyd-client
 
