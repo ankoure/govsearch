@@ -23,9 +23,9 @@ USER_AGENT = "govsearch-bot/1.0"
 ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
-CONCURRENT_REQUESTS = 8
-CONCURRENT_REQUESTS_PER_DOMAIN = 2
-DOWNLOAD_DELAY = 0.5
+CONCURRENT_REQUESTS = 64
+CONCURRENT_REQUESTS_PER_DOMAIN = 4
+DOWNLOAD_DELAY = 0.25
 
 # Timeout settings (in seconds)
 DOWNLOAD_TIMEOUT = 30
@@ -77,12 +77,12 @@ ITEM_PIPELINES = {
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 1
+AUTOTHROTTLE_START_DELAY = 0.5
 # The maximum download delay to be set in case of high latencies
-AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 10
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 2.0
 # Enable showing throttling stats for every response received:
 # AUTOTHROTTLE_DEBUG = False
 
@@ -99,7 +99,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 # Retry middleware with exponential backoff
 RETRY_ENABLED = True
-RETRY_TIMES = 5  # Increased for robustness
+RETRY_TIMES = 3  # Increased for robustness
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]  # Added common error codes
 RETRY_PRIORITY_ADJUST = -1  # Reduce priority of retries
 
