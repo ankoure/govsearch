@@ -1,0 +1,50 @@
+## Datadog Agent Configuration for GovSearch
+
+## API Key - Set via DD_API_KEY environment variable
+# api_key:
+
+## Datadog Site - Set via DD_SITE environment variable
+# site: datadoghq.com
+
+## Service name
+# service: govsearch
+
+## Environment tag
+# env: development
+
+## Hostname configuration
+hostname: govsearch-scrapyd
+
+## Log collection
+logs_enabled: true
+logs_config:
+  container_collect_all: true
+  processing_rules:
+    - type: multi_line
+      name: scrapy_logs
+      pattern: \d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}
+
+## APM Configuration
+apm_config:
+  enabled: true
+  apm_non_local_traffic: true
+  receiver_port: 8126
+
+## Process monitoring
+process_config:
+  enabled: true
+
+## Container monitoring
+container_exclude:
+  - name:datadog-agent
+
+## Custom checks directory
+confd_path: /etc/datadog-agent/conf.d
+checks_d: /etc/datadog-agent/checks.d
+
+## DogStatsD configuration for custom metrics
+dogstatsd_port: 8125
+dogstatsd_non_local_traffic: true
+
+## OpenSearch integration (optional - requires agent check)
+# To enable OpenSearch monitoring, create conf.d/elastic.d/conf.yaml

@@ -1,4 +1,32 @@
 services:
+  # Datadog Agent for monitoring and observability
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=${DD_SITE:-datadoghq.com}
+      - DD_ENV=${DD_ENV:-development}
+      - DD_SERVICE=govsearch
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_PROCESS_AGENT_ENABLED=true
+      - DD_CONTAINER_EXCLUDE="name:datadog-agent"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./datadog.yaml:/etc/datadog-agent/datadog.yaml:ro
+    ports:
+      - "8125:8125/udp" # DogStatsD
+      - "8126:8126/tcp" # APM traces
+    networks:
+      - govnet
+    restart: unless-stopped
+
   opensearch:
     image: opensearchproject/opensearch:2.9.0
     environment:
@@ -20,6 +48,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    labels:
+      com.datadoghq.ad.check_names: '["elastic"]'
+      com.datadoghq.ad.init_configs: "[{}]"
+      com.datadoghq.ad.instances: '[{"url": "http://%%host%%:9200"}]'
+      com.datadoghq.ad.logs: '[{"source": "opensearch", "service": "opensearch"}]'
 
   dashboards:
     image: opensearchproject/opensearch-dashboards:2.9.0
@@ -43,6 +76,16 @@ services:
       - OPENSEARCH_PORT=9200
       - OPENSEARCH_INDEX=govsites
       - SEEDS_FILE=/app/seeds.csv
+      # Datadog configuration
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_DOGSTATSD_PORT=8125
+      - DD_ENV=${DD_ENV:-development}
+      - DD_SERVICE=govsearch
+      - DD_VERSION=0.1.0
+      - DD_TRACE_ENABLED=true
+      - DD_PROFILING_ENABLED=true
+      - DD_LOGS_INJECTION=true
     volumes:
       - .:/app
       - scrapyd-data:/var/lib/scrapyd
@@ -51,9 +94,15 @@ services:
     depends_on:
       opensearch:
         condition: service_healthy
+      datadog-agent:
+        condition: service_started
     networks:
       - govnet
     restart: always
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "scrapy", "service": "govsearch"}]'
+      com.datadoghq.tags.service: "govsearch"
+      com.datadoghq.tags.env: "${DD_ENV:-development}"
 
 volumes:
   opensearch-data:

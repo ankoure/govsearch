@@ -54,6 +54,8 @@ DOWNLOAD_WARNSIZE = 5242880  # 5MB
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "govsearch.middlewares.ResponseValidationMiddleware": 543,
+    "govsearch.datadog_middleware.DatadogTracingMiddleware": 100,  # Early in chain for tracing
+    "govsearch.datadog_middleware.DatadogStatsMiddleware": 900,  # Late in chain for metrics
 }
 
 # Enable or disable extensions
@@ -66,7 +68,9 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 # Note: This is now the global default; individual spiders can override if needed
 ITEM_PIPELINES = {
-    "govsearch.pipelines.OpenSearchPipeline": 300,
+    "govsearch.datadog_pipelines.DatadogPipelineMetrics": 100,  # Metrics collection
+    "govsearch.pipelines.OpenSearchPipeline": 200,  # Index to OpenSearch
+    "govsearch.datadog_pipelines.DatadogOpenSearchMetrics": 300,  # Wraps OpenSearch metrics
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -105,7 +109,7 @@ TRAFILATURA_CUTOFF = 100  # minimum length to keep
 TEXT_MAX_LENGTH = 50000  # maximum text length to store
 
 # Crawl depth settings
-DEPTH_LIMIT = 1  # How deep to follow links from seed URLs
+DEPTH_LIMIT = 3  # How deep to follow links from seed URLs
 DEPTH_PRIORITY = 1  # Prioritize breadth-first (lower depth first)
 
 # Job persistence for resumable crawls
@@ -200,4 +204,25 @@ SITEMAP_URLS_PATTERN = [
     "/sitemap.xml",
     "/sitemap_index.xml",
     "/sitemap-index.xml",
+]
+
+# ============================================================================
+# Datadog Monitoring Configuration
+# ============================================================================
+
+# Enable Datadog monitoring (set to False to disable all Datadog features)
+DATADOG_ENABLED = True
+
+# Datadog agent connection settings
+DATADOG_STATSD_HOST = "datadog-agent"  # Hostname of DogStatsD agent
+DATADOG_STATSD_PORT = 8125  # DogStatsD port
+
+# Datadog APM settings
+DATADOG_SERVICE_NAME = "govsearch"  # Service name in Datadog APM
+DATADOG_ENV = "development"  # Environment (development, staging, production)
+
+# Optional: Additional Datadog tags
+DATADOG_TAGS = [
+    "project:govsearch",
+    "component:web-scraper",
 ]
