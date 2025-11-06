@@ -69,6 +69,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Note: This is now the global default; individual spiders can override if needed
 ITEM_PIPELINES = {
     "govsearch.datadog_pipelines.DatadogPipelineMetrics": 100,  # Metrics collection
+    "govsearch.pipelines.KeywordVectorChunkPipeline": 150,  # Add this
     "govsearch.pipelines.OpenSearchPipeline": 200,  # Index to OpenSearch
     "govsearch.datadog_pipelines.DatadogOpenSearchMetrics": 300,  # Wraps OpenSearch metrics
 }

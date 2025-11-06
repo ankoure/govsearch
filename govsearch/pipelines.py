@@ -28,7 +28,10 @@ class OpenSearchPipeline:
         # create index with a simple mapping if it doesn't exist
         if not self.client.indices.exists(INDEX_NAME):
             mapping = {
-                "settings": {"number_of_shards": 1},
+                "settings": {
+                    "number_of_shards": 1,
+                    "index.knn": True,
+                },
                 "mappings": {
                     "properties": {
                         "url": {"type": "keyword"},
@@ -44,7 +47,15 @@ class OpenSearchPipeline:
                             "properties": {
                                 "text": {"type": "text"},
                                 "keywords": {"type": "keyword"},
-                                "vector": {"type": "dense_vector", "dims": 384},
+                                "vector": {
+                                    "type": "knn_vector",
+                                    "dimension": 384,
+                                    "method": {
+                                        "name": "hnsw",
+                                        "space_type": "l2",
+                                        "engine": "nmslib",
+                                    },
+                                },
                             },
                         },
                         "gis_links": {
@@ -149,6 +160,10 @@ class KeywordVectorChunkPipeline:
         return chunks
 
     def process_item(self, item, spider):
+        # Skip processing for error items (they have error_type field)
+        if "error_type" in item:
+            return item
+
         text = item.get("text", "")
         if not text:
             item["keywords"] = []

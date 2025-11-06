@@ -41,4 +41,5 @@ RUN mkdir -p /var/lib/scrapyd/eggs /var/lib/scrapyd/logs /var/lib/scrapyd/items
 # Expose scrapyd port
 EXPOSE 6800
 
-CMD ["scrapyd"]
+# Clean up stale PID files and start scrapyd
+CMD ["sh", "-c", "rm -f /var/lib/scrapyd/twistd.pid && scrapyd"]

@@ -25,6 +25,9 @@ class GovSiteItem(Item):
     # OSM geometry fields
     osm_relation_id = Field()  # OSM relation ID for this domain
     depth = Field()
+    # Search Fields
+    chunks = Field()
+    keywords = Field()
 
 
 class CrawlErrorItem(Item):

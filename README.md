@@ -20,7 +20,7 @@ After the services are running, deploy your spider using `scrapyd-deploy`:
 
 ```bash
 # Deploy from your local machine (recommended)
-poetry run scrapyd-deploy scrapyd --build-egg /tmp/govsearch.egg
+poetry run scrapyd-deploy scrapyd
 
 # Or deploy from within the container
 docker compose exec scrapyd bash -c "cd /app && scrapyd-deploy scrapyd"
